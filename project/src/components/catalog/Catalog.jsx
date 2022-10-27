@@ -1,4 +1,3 @@
-import React from "react";
 import { Goods } from "./Goods";
 import { Categories } from "./Categories";
 import "./css/catalog.css";
@@ -6,89 +5,71 @@ import { Filters } from "./Filters";
 import { queryState } from "./css/queryState";
 import { getProductList } from "./api";
 import { getCategoriesList } from "./api";
+import { useState, useEffect } from "react";
 
-class Catalog extends React.PureComponent {
-  constructor(props) {
-    super(props);
+export function Catalog() {
+  const [goods, setGoods] = useState([]);
+  const [goodsQueryStatus, setGoodsProductsQueryStatus] = useState(
+    queryState.initial
+  );
+  // array at default args
+  const [goodsQueryError, setGoodsProductsQueryError] = useState(
+    queryState.initial
+  );
 
-    this.state = {
-      goods: [],
-      goodsQueryStatus: queryState.initial,
-      goodsQueryError: null,
+  const [categories, setCategories] = useState([]);
+  const [categoriesQueryStatus, setCategoriesQueryStatus] = useState(
+    queryState.initial
+  );
+  // array at default args
+  const [categoriesQueryError, setCategoriesQueryError] = useState(
+    queryState.initial
+  );
 
-      categories: [],
-      categoriesQueryStatus: queryState.initial,
-      categoriesQueryError: null,
+  const [titleFilterValue, setTitleFilterValue] = useState("");
+  const [priceFilterMin, setPriceFilterMin] = useState(0);
+  const [priceFilterMax, setPriceFilterMax] = useState(1000);
+  const [ratingFilter, setRatingFilter] = useState(100);
+  const [isNewFilter, setIsNewFilter] = useState(false);
+  const [isInStockFilter, setIsInStockFilter] = useState(false);
+  const [isSaleFilter, setIsSaleFilter] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("");
 
-      titleFilterValue: "",
-      priceFilterMin: 0,
-      priceFilterMax: 1000,
-      ratingFilter: 100,
-      isNewFilter: false,
-      isInStockFilter: false,
-      isSaleFilter: false,
-      categoryFilter: "",
-    };
-  }
-
-  componentDidMount() {
-    this.loadProductList();
-    this.loadCategories();
-  }
-
-  loadProductList = () => {
-    this.setState({
-      goodsQueryStatus: queryState.loading,
-    });
+  const loadProductList = () => {
+    setGoodsProductsQueryStatus(queryState.loading);
     getProductList()
       .then((productList) => {
-        this.setState({
-          goodsQueryStatus: queryState.success,
-          goodsQueryError: null,
-          goods: productList,
-        });
+        setGoodsProductsQueryStatus(queryState.success);
+        setGoodsProductsQueryError(null);
+        setGoods(productList);
       })
       .catch((error) => {
-        this.setState({
-          goodsQueryStatus: queryState.error,
-          goodsQueryError: error,
-        });
+        setGoodsProductsQueryStatus(queryState.error);
+        setGoodsProductsQueryError(error);
       });
   };
 
-  loadCategories = () => {
-    this.setState({
-      categoriesQueryStatus: queryState.loading,
-    });
+  const loadCategories = () => {
+    setCategoriesQueryStatus(queryState.loading);
+
     getCategoriesList()
       .then((categoriesList) => {
-        this.setState({
-          categoriesQueryStatus: queryState.success,
-          categoriesQueryError: null,
-          categories: categoriesList,
-        });
+        setCategoriesQueryStatus(queryState.success);
+        setCategoriesQueryError(null);
+        setCategories(categoriesList);
       })
       .catch((error) => {
-        this.setState({
-          categoriesQueryStatus: queryState.error,
-          categoriesQueryError: error,
-        });
+        setCategoriesQueryStatus(queryState.error);
+        setCategoriesQueryError(error);
       });
   };
 
-  getFilteredProducts() {
-    const {
-      goods,
-      titleFilterValue,
-      priceFilterMin,
-      priceFilterMax,
-      ratingFilter,
-      isNewFilter,
-      isInStockFilter,
-      isSaleFilter,
-      categoryFilter,
-    } = this.state;
+  useEffect(() => {
+    loadProductList();
+    loadCategories();
+  }, []);
 
+  const getFilteredProducts = () => {
     return goods.filter((product) => {
       let isPass = true;
 
@@ -118,159 +99,118 @@ class Catalog extends React.PureComponent {
 
       return isPass;
     });
-  }
-
-  searchHandler = (value) => {
-    this.setState({ titleFilterValue: value });
-  };
-  priceHandler = (priceMin, priceMax) => {
-    this.setState({ priceFilterMin: priceMin, priceFilterMax: priceMax });
-  };
-  ratingHandler = (value) => {
-    this.setState({ ratingFilter: value });
   };
 
-  isNewCheckboxHandler = (value) => {
-    this.setState(() => {
-      return {
-        isNewFilter: value,
-      };
-    });
+  const searchHandler = (value) => {
+    setTitleFilterValue(value);
+  };
+  const priceHandler = (priceMin, priceMax) => {
+    setPriceFilterMin(priceMin);
+    setPriceFilterMax(priceMax);
+  };
+  const ratingHandler = (value) => {
+    setRatingFilter(value);
   };
 
-  isSaleCheckboxHandler = (value) => {
-    this.setState(() => {
-      return {
-        isSaleFilter: value,
-      };
-    });
+  const isNewCheckboxHandler = (value) => {
+    setIsNewFilter(value);
   };
 
-  isInStockCheckboxHandler = (value) => {
-    this.setState(() => {
-      return {
-        isInStockFilter: value,
-      };
-    });
+  const isSaleCheckboxHandler = (value) => {
+    setIsSaleFilter(value);
   };
 
-  categoryHandler = (value) => {
-    this.setState(() => {
-      return {
-        categoryFilter: value,
-      };
-    });
+  const isInStockCheckboxHandler = (value) => {
+    setIsInStockFilter(value);
   };
 
-  clearAllFiltersHandler = () => {
-    this.setState(() => {
-      return {
-        titleFilterValue: "",
-        priceFilterMin: 0,
-        priceFilterMax: 1000,
-        ratingFilter: 100,
-        isNewFilter: false,
-        isInStockFilter: false,
-        isSaleFilter: false,
-        categoryFilter: "",
-      }
+  const categoryHandler = (value) => {
+    setCategoryFilter(value);
+  };
 
-    })
-  }
+  const clearAllFiltersHandler = () => {
+    setTitleFilterValue("");
+    setPriceFilterMin(0);
+    setPriceFilterMax(1000);
+    setRatingFilter(100);
+    setIsNewFilter(false);
+    setIsInStockFilter(false);
+    setIsSaleFilter(false);
+    setCategoryFilter("");
+  };
 
-  render() {
-    const {
-      goods,
-      goodsQueryStatus,
-      goodsQueryError,
-      categories,
-      categoriesQueryStatus,
-      categoriesQueryError,
-      titleFilterValue,
-      priceFilterMin,
-      priceFilterMax,
-      ratingFilter,
-      isNewFilter,
-      isInStockFilter,
-      isSaleFilter,
-      categoryFilter,
-    } = this.state;
+  const isLoadingProducts =
+    goodsQueryStatus === queryState.loading ||
+    goodsQueryStatus === queryState.initial;
+  const isSuccessProducts = goodsQueryStatus === queryState.success;
+  const isErrorProducts = goodsQueryStatus === queryState.error;
 
-    const isLoadingProducts =
-      goodsQueryStatus === queryState.loading ||
-      goodsQueryStatus === queryState.initial;
-    const isSuccessProducts = goodsQueryStatus === queryState.success;
-    const isErrorProducts = goodsQueryStatus === queryState.error;
+  const isLoadingCategories =
+    categoriesQueryStatus === queryState.loading ||
+    categoriesQueryStatus === queryState.initial;
+  const isSuccessCategories = categoriesQueryStatus === queryState.success;
+  const isErrorCategories = categoriesQueryStatus === queryState.error;
 
-    const isLoadingCategories =
-      categoriesQueryStatus === queryState.loading ||
-      categoriesQueryStatus === queryState.initial;
-    const isSuccessCategories = categoriesQueryStatus === queryState.success;
-    const isErrorCategories = categoriesQueryStatus === queryState.error;
+  const filteredGoods = getFilteredProducts();
+  return (
+    <div className="catalog">
+      <div className="container">
+        <div className="row">
+          <div className="catalog-categories col-3">
+            {isLoadingCategories && <div>Loading Categories...</div>}
 
-    const filteredGoods = this.getFilteredProducts();
-    return (
-      <div className="catalog">
-        <div className="container">
-          <div className="row">
-            <div className="catalog-categories col-3">
-              {isLoadingCategories && <div>Loading Categories...</div>}
+            {!isLoadingCategories && isSuccessCategories && (
+              <Categories
+                categories={categories}
+                categoryFilter={categoryFilter}
+                categoryHandler={categoryHandler}
+              />
+            )}
 
-              {!isLoadingCategories && isSuccessCategories && (
-                <Categories
-                  categories={categories}
-                  categoryFilter={categoryFilter}
-                  categoryHandler={this.categoryHandler}
+            {isErrorCategories && (
+              <div>
+                {categoriesQueryError?.message || "Error with categories :("}
+              </div>
+            )}
+          </div>
+          <div className="catalog-goods col-9">
+            <div className="goods-filters">
+              <Filters
+                titleFilterValue={titleFilterValue}
+                priceFilterMin={priceFilterMin}
+                priceFilterMax={priceFilterMax}
+                ratingFilter={ratingFilter}
+                isNewFilter={isNewFilter}
+                isInStockFilter={isInStockFilter}
+                isSaleFilter={isSaleFilter}
+                categoryFilter={categoryFilter}
+                searchHandler={searchHandler}
+                priceHandler={priceHandler}
+                ratingHandler={ratingHandler}
+                isNewCheckboxHandler={isNewCheckboxHandler}
+                isSaleCheckboxHandler={isSaleCheckboxHandler}
+                isInStockCheckboxHandler={isInStockCheckboxHandler}
+              />
+            </div>
+            <div className="goods-goods d-flex">
+              {isLoadingProducts && <div>Loading Products...</div>}
+              {!isLoadingProducts && isSuccessProducts && (
+                <Goods
+                  goods={filteredGoods}
+                  allProductAmount={goods.length}
+                  clearAllFiltersHandler={clearAllFiltersHandler}
                 />
               )}
 
-              {isErrorCategories && (
+              {!isLoadingProducts && isErrorProducts && (
                 <div>
-                  {categoriesQueryError?.message || "Error with categories :("}
+                  {goodsQueryError?.message || "Error with products :("}
                 </div>
               )}
-            </div>
-            <div className="catalog-goods col-9">
-              <div className="goods-filters">
-                <Filters
-                  titleFilterValue={titleFilterValue}
-                  priceFilterMin={priceFilterMin}
-                  priceFilterMax={priceFilterMax}
-                  ratingFilter={ratingFilter}
-                  isNewFilter={isNewFilter}
-                  isInStockFilter={isInStockFilter}
-                  isSaleFilter={isSaleFilter}
-                  categoryFilter={categoryFilter}
-                  searchHandler={this.searchHandler}
-                  priceHandler={this.priceHandler}
-                  ratingHandler={this.ratingHandler}
-                  isNewCheckboxHandler={this.isNewCheckboxHandler}
-                  isSaleCheckboxHandler={this.isSaleCheckboxHandler}
-                  isInStockCheckboxHandler={this.isInStockCheckboxHandler}
-                />
-              </div>
-              <div className="goods-goods d-flex">
-                {isLoadingProducts && <div>Loading Products...</div>}
-                {!isLoadingProducts && isSuccessProducts && (
-                  <Goods
-                    goods={filteredGoods}
-                    allProductAmount={goods.length}
-                    clearAllFiltersHandler={this.clearAllFiltersHandler}
-                  />
-                )}
-
-                {!isLoadingProducts && isErrorProducts && (
-                  <div>
-                    {goodsQueryError?.message || "Error with products :("}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
-
-export { Catalog };

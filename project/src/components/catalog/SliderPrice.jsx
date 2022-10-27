@@ -11,8 +11,9 @@ function valuetext(value) {
 const minDistance = 10;
 
 export function SliderPrice(props) {
+  const { priceHandler, priceFilterMax, priceFilterMin } = props;
   const [value, setValue] = React.useState([0, 1000]);
-  const { priceHandler } = props;
+
 
   const handleChange = (event, newValue, activeThumb) => {
     if (!Array.isArray(newValue)) {
@@ -34,7 +35,7 @@ export function SliderPrice(props) {
     <Box sx={{ width: 700, margin: "10px auto" }}>
       <Slider
         getAriaLabel={() => "Minimum distance"}
-        value={value}
+        value={[priceFilterMax,priceFilterMin]}
         min={0}
         max={1000}
         onChange={handleChange}
